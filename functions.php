@@ -1,8 +1,21 @@
 <?php
+require ( get_stylesheet_directory() . '/includes/XProfile_FWP.php' );
+
+function register_my_menus() {
+  register_nav_menus(
+    array(
+      'top-nav' => __( 'Main Site Menu' )
+    )
+  );
+}
+add_action( 'init', 'register_my_menus' );
+
 function session_content_func( $atts=array() ) {
 	extract($atts );
 	$p = get_post($id);
-	$content = $p->post_content;
+	$post_content = $p->post_content;
+	$content = '<div class="excerpt">'.substr(strip_tags($post_content), 0 , 250).'... <a href="" class="read">Read More</a>  </div>
+				<div class="content">'.$post_content.' <a href="" class="read-less">Read Less</a></div>';
 	$prefix = do_shortcode('[session_meta post_id='.$id.']');
 	
 	if (!is_admin()){
@@ -10,11 +23,24 @@ function session_content_func( $atts=array() ) {
 	} else {
 		$content = $prefix;
 	}
+	
 	// return apply_filters( 'session-content-shortcodes-content', apply_filters( 'the_content', $content ), $p );
 	return $content;
 }
 add_shortcode( 'session-content', 'session_content_func' );
 add_filter( 'bp_get_group_description', 'do_shortcode' );
+
+// adding custom jQuery to group pages (except home) eg scroll jump
+function conc_wp_session_script() {
+	//if(!bp_is_group_home()){
+		wp_enqueue_script(
+			'session-script',
+			get_stylesheet_directory_uri() . '/js/session-script.js',
+			array( 'jquery' )
+		);  
+	//}
+}
+add_filter( 'bp_before_group_header_meta', 'conc_wp_session_script' );
 
 function render_calendar($id){ 
 	return '<div style="float:right">'.google_calendar_link($id).ics_calendar_link($id).'</div>';
@@ -96,6 +122,8 @@ function google_calendar_link($id){
 	//}	
 	return $replace;
 }
+
+
 
 function newsletter_subscription_notification_settings() {
 	global $bp ;?>
@@ -195,4 +223,57 @@ function get_the_slug( $id=null ){
 }
 
 
+
+
+/**
+ * Responsive header markup for frontend
+ *
+ * the markup use <noscript> responsive image techique as Antti Peisa describes it
+ * @link http://www.monoliitti.com/images/
+ *
+ * with a slight alternation required by jQuery Picture plugin
+ * @link http://jquerypicture.com/ 
+ **/
+function frl_header_image_markup(){
+	$baseurl = get_stylesheet_directory_uri().'/images/header-';
+?>
+<picture alt="Logo" id="header-image">
+    <source src="<?php echo $baseurl.'min.jpg';?>">
+    <source src="<?php echo $baseurl.'med.jpg';?>" media="(min-width:440px)">
+    <source src="<?php echo $baseurl.'max.jpg';?>" media="(min-width:600px)">
+    <noscript>
+        <img src="<?php echo $baseurl.'max.jpg';?>" alt="Logo">
+    </noscript>
+</picture>
+
+<?php
+}
+
+
+/**
+ * CSS for responsive header in frontend
+ **/
+function frl_header_image_style() {
+	
+	$src = get_stylesheet_directory_uri().'/js/jquery-picture-min.js';
+    wp_enqueue_script('jquery-picture', $src, array('jquery'), 0.9, true);
+?>
+	<style type="text/css">
+        #header-image {
+            padding: 0.5em 0; }
+            
+        #header-image img {
+			vertical-align: bottom;
+            width: 100%;
+            height: auto; }
+    </style>
+	
+	<script>
+        jQuery(document).ready(function($){
+            $('#header-image').picture();
+        });
+    </script>
+<?php
+}
+add_action('wp_head', 'frl_header_image_style');
 ?>
