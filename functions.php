@@ -1,5 +1,72 @@
 <?php
+$root_cat = "Reader";
 require ( get_stylesheet_directory() . '/includes/XProfile_FWP.php' );
+// record if post has been read in the reader view
+require (get_stylesheet_directory() . '/includes/readerlite_mark_post_as_read.php');
+
+if (get_option('readerlite_mark_as_read') != 'true'){
+	include(get_stylesheet_directory() . '/includes/readerlite_installation.php');
+	readerlite_mar_install();
+	add_option('readerlite_mark_as_read','true');
+}
+
+function reader_ajax() { // loads post content into accordion
+    $post_id = $_POST['post_id'];
+	$post_type = $_POST['post_type'];
+	query_posts(array('p' => $post_id, 'post_type' => array('post')));
+	ob_start();
+	while (have_posts()) : the_post(); 
+	if ($post_type == "summary") {
+		// used if post content from the reader is being dynamically written
+	} 
+	if(function_exists('readerlite_mark_post_as_read')){
+    	readerlite_mark_post_as_read();
+	}
+	endwhile;
+	$output = ob_get_contents();
+	ob_end_clean();
+	echo $output;
+	die(1);
+}
+
+add_action('wp_ajax_ajaxify', 'reader_ajax');           // for logged in user  
+add_action('wp_ajax_nopriv_ajaxify', 'reader_ajax');
+
+// load reader template even if sub category 
+// inducded because the way I configure FWP is to put all posts in a reader category with various child stubs
+// http://stackoverflow.com/a/3120150/1027723
+function load_cat_parent_template()
+{
+    global $wp_query;
+    if (!$wp_query->is_category)
+        return true; // saves a bit of nesting
+    // get current category object
+    $cat = $wp_query->get_queried_object();
+    // trace back the parent hierarchy and locate a template
+    while ($cat && !is_wp_error($cat)) {
+        $template = get_stylesheet_directory() . "/category-{$cat->slug}.php";
+        if (file_exists($template)) {
+            load_template($template);
+			
+            exit;
+        }
+        $cat = $cat->parent ? get_category($cat->parent) : false;
+    }
+}
+add_action('template_redirect', 'load_cat_parent_template');
+
+function reader_enqueue_accordion(){
+	global $post;
+	if (cat_is_ancestor_of(get_cat_id($root_cat), get_query_var('cat')) || is_category($root_cat)){
+		wp_enqueue_script('jquery-ui-accordion'); // required for the reader
+		wp_enqueue_style('conc-wp-jqueryui',
+                get_stylesheet_directory_uri().'/css/jquery-ui-1.10.3.custom.min.css',
+                false,
+                1,
+                false);
+	}
+}
+add_action('wp_enqueue_scripts', 'reader_enqueue_accordion');
 
 function register_my_menus() {
   register_nav_menus(
@@ -41,6 +108,18 @@ function conc_wp_session_script() {
 	//}
 }
 add_filter( 'bp_before_group_header_meta', 'conc_wp_session_script' );
+
+
+function get_user_role( $user_id ){
+
+  $user_data = get_userdata( $user_id );
+
+  if(!empty( $user_data->roles ))
+      return $user_data->roles[0];
+
+  return false; 
+
+}
 
 function render_calendar($id){ 
 	return '<div style="float:right">'.google_calendar_link($id).ics_calendar_link($id).'</div>';
@@ -222,6 +301,45 @@ function get_the_slug( $id=null ){
   return $slug;
 }
 
+
+// https://gist.github.com/sbrajesh/2142009
+function bpdev_exclude_users($qs=false,$object=false){
+    //list of users to exclude
+    
+    $excluded_user=join(',',bpdev_get_subscriber_user_ids());//comma separated ids of users whom you want to exclude
+   
+    if($object!='members')//hide for members only
+        return $qs;
+    
+    $args=wp_parse_args($qs);
+    
+    //check if we are searching for friends list etc?, do not exclude in this case
+    if(!empty($args['user_id']))
+        return $qs;
+    
+    if(!empty($args['exclude']))
+        $args['exclude']=$args['exclude'].','.$excluded_user;
+    else 
+        $args['exclude']=$excluded_user;
+      
+    $qs=build_query($args);
+   
+   
+   return $qs;
+    
+}
+add_action('bp_ajax_querystring','bpdev_exclude_users',20,2);
+ 
+function bpdev_get_subscriber_user_ids(){
+    $users=array();
+    $subscribers= get_users( array( 'role' => 'contributor' ) );
+   if(!empty($subscribers)){
+       foreach((array)$subscribers as $subscriber)
+           $users[]=$subscriber->ID;
+       
+   }
+   return $users;
+}
 
 
 

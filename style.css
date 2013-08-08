@@ -1,31 +1,17 @@
 /* 
-Theme Name: Responsive Child Theme 
-Theme URI: http://themeid.com/responsive-theme/ 
-Description: Responsive Theme is a flexible foundation with fluid grid system that adapts your website to mobile devices and the desktop or any other viewing environment. Theme features 9 Page Templates, 11 Widget Areas, 6 Template Layouts, 4 Menu Positions and more. Powerful but simple Theme Options for full CMS control with easy Logo Upload, Social Networking and Webmaster Tools etc. Responsive is WooCommerce Compatible, Multilingual Ready (WPML), RTL-Language Support, Retina-Ready, W3C Markup Validated and currently translated into 40 languages. Cross-Browser compatible and yes even the IE7. No paid memberships or clubs to get a FREE/Responsive Support you need. http://themeid.com/support/
+Theme Name: Conc-WP
+Description: BuddyPress child theme configured for a connectivist conferencing platform
+Author: mhawksey
+Author URI: http://mashe.hawksey.info
 
 Template: bp-default
-Version: 1.0.0
-Author: ThemeID 
-Author URI: http://themeid.com
-Tags: white, black, gray, light, custom-menu, custom-header, custom-background, one-column, two-columns, left-sidebar, right-sidebar, flexible-width, theme-options, threaded-comments, full-width-template, sticky-post, translation-ready, flexible-width, rtl-language-support
-
+Parent Theme Name: BuddyPress Default
+Parent Theme URI: http://buddypress.org/extend/themes/
+Parent Version: 1.8
+Parent Author: the BuddyPress team
+Parent Author URI: http://buddypress.org
 License: GNU General Public License
-License URI: license.txt 
-
-Responsive WordPress Theme, Copyright (C) 2003-2012 Emil Uzelac 
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+License URI: license.txt
 */
 
 @media only screen and (max-width: 991px) {
@@ -122,4 +108,203 @@ background-color: #C4D79B;
 .calendar_button {
 	margin-bottom:5px;	
 }
-							
+
+.widget_categories li {
+	padding-left:10px;
+	list-style-type:disc;
+	list-style-position: inside;	
+}
+
+
+/* =Start From Here
+-------------------------------------------------------------- */
+
+.inifiniteLoader{
+	background-image:url(images/ajax-loader.gif);
+	background-repeat: no-repeat;
+	padding-left:150px;
+}  
+.ui-accordion .ui-accordion-content {
+padding:0px;	
+}
+.collapse_title {
+font-weight:700;
+}
+.collapse_source {
+font-weight:400;
+}
+
+.custom_star {
+margin-top:0;
+margin-left:0;
+width:22px;
+float:left;
+}
+
+#post_title_block {
+margin-left:20px;
+margin-right:20px;
+}
+
+.ajaxed {
+padding-top:0;
+}
+
+a.jump_to_url {
+float:right;
+text-decoration:underline;
+background:url(icons/acc-sprite.png) no-repeat -99px 0;
+padding-left:15px;
+height:15px;
+}
+
+#accordion h3.post-title.read {
+background:none!important;
+}
+
+.post-entry a {
+text-decoration:underline;
+color:#06c;
+}
+
+
+.loaded-post {
+padding:1em 2.2em;
+}
+
+.share_widget {
+background-color:#F0F0F0;
+text-align:right;
+overflow:auto;
+vertical-align:middle;
+padding:4px;
+border-top-left-radius:4px;
+border-top-right-radius:4px;
+-webkit-border-top-left-radius: 4px;
+-moz-border-top-right-radius: 4px;
+}
+
+.share_widget a {
+
+display: inline-block;
+height: 18px;
+overflow: hidden;
+text-indent: 100%;
+white-space: nowrap;
+width: 18px;
+padding-top: 1px;
+}
+a.gp-text{
+	background: url('icons/social-sprite.png') no-repeat 0px 0px;
+}
+a.fb-text{
+	background: url('icons/social-sprite.png') no-repeat -30px 0px;
+}
+a.tw-text{
+	background: url('icons/social-sprite.png') no-repeat -60px 0px;
+}
+a.li-text{
+	background: url('icons/social-sprite.png') no-repeat -90px 0px;
+}
+a.del-text{
+	background: url('icons/social-sprite.png') no-repeat -120px 0px;
+}
+.share_widget a:hover {
+text-decoration:underline;
+}
+
+.share_widget ul {
+list-style-type:none;
+width:100%;
+margin:0;
+padding:0;
+}
+
+.share_widget li {
+display:inline;
+}
+
+.share-count {
+background-color:#fff;
+margin-left:6px;
+margin-top:1px;
+position:relative;
+border-color:#cdd5e5;
+border-style:solid;
+border-width:1px;
+padding:0 2px;
+}
+
+.share-count i,.share-count u {
+border:solid transparent;
+border-right-color:#D7D7D7;
+top:2px;
+left:-5px;
+display:block;
+position:absolute;
+height:1px;
+border-width:4px 5px 4px 0;
+}
+
+.share-count i {
+left:-3px;
+z-index:5;
+border-right-color:#FFF;
+}
+
+.gplusbut {
+top:3px;
+display:inline;
+position:relative;
+}
+
+a.wpfp-link.remove {
+background:url(icons/acc-sprite.png) -49px 0 no-repeat;
+width:15px;
+height:15px;
+display:inline-block;
+}
+
+a.wpfp-link.add {
+background:url(icons/acc-sprite.png) 0 0 no-repeat;
+width:15px;
+height:15px;
+display:inline-block;
+}
+
+.wpf_custom_widget {
+list-style-type:none;
+padding-left:0px !important;
+
+}
+.wpf_custom_star{
+float:left;	
+
+}
+.wpf_custom_star a {
+	display:inline-block !important;
+}
+.wpf_custom_div{
+padding-left: 20px;
+padding-bottom:7px;
+}
+
+a:hover.wpfp-link {
+background-position:-25px;
+}
+
+.wpfp-span {
+float:left;
+}
+
+.wpfp-img {
+border:0;
+vertical-align:middle;
+margin-right:2px;
+}
+
+.wp-favourite-user-section li {
+list-style:disc!important;
+list-style-position:outside!important;
+margin-left:20px!important;
+}

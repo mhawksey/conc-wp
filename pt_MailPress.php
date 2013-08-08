@@ -1,52 +1,36 @@
-<?php
-
-// Exit if accessed directly
-if ( !defined('ABSPATH')) exit;
-
-/**
- * Single Posts Template
- *
- *
- * @file           single.php
- * @package        Responsive 
- * @author         Emil Uzelac 
- * @copyright      2003 - 2013 ThemeID
- * @license        license.txt
- * @version        Release: 1.0
- * @filesource     wp-content/themes/responsive/single.php
- * @link           http://codex.wordpress.org/Theme_Development#Single_Post_.28single.php.29
- * @since          available since Release 1.0
- */
-?>
 <?php if (class_exists('MailPress')) $results = MP_Mail_links::process(); ?>
 <?php get_header(); ?>
 
-        <div id="content" class="grid col-620">
-        	
+	<div id="content">
+		<div class="padder">
 
-		<div class='post' id='post-MailPress'>
+			<?php do_action( 'bp_before_blog_single_post' ); ?>
 
-		<h2><?php echo $results ['title']; ?></h2>
+			<div class="page" id="blog-single" role="main">
 
-			<div class='entry'>
 
-				<?php echo $results ['content']; ?>
+				<div id="post-" >
 
-			</div>
+					<div class="post-content">
+						<h2 class="posttitle"><?php echo $results ['title']; ?></h2>
+
+						
+						<div class="entry">
+							<?php echo $results ['content']; ?>
+
+						</div>
+					</div>
+
+				</div>
 
 		</div>
 
-	</div>
+		<?php do_action( 'bp_after_blog_single_post' ); ?>
 
-<?php get_sidebar(); ?>
+		</div><!-- .padder -->
+	</div><!-- #content -->
+
+	<?php get_sidebar(); ?>
+
 <?php get_footer(); ?>
 
-<?php
-
-/*
-
-Template Name: MailPress
-
-*/
-
-?>
