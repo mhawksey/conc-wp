@@ -38,13 +38,21 @@
 
 				</div><!-- .padder -->
 			</div><!-- #search-bar -->
-			<div id="top-nav" role="navigation">
-				<?php //wp_nav_menu( array( 'container' => false, 'menu_id' => 'top-nav', 'theme_location' => 'top-nav', 'fallback_cb' => 'bp_dtheme_main_nav' ) ); ?>
+			<div role="navigation" id="primary_links">
+				<?php wp_nav_menu( array( 'container' => false, 'menu_id' => 'top-nav', 'theme_location' => 'top-nav', 'fallback_cb' => 'bp_dtheme_main_nav' ) ); ?>
 			</div>
 			<div id="navigation" role="navigation">
 				<?php wp_nav_menu( array( 'container' => false, 'menu_id' => 'nav', 'theme_location' => 'primary', 'fallback_cb' => 'bp_dtheme_main_nav' ) ); ?>
 			</div>
-
+			<div id="navigation-drop" role="navigation">
+            	<?php wp_nav_menu( array( 
+									'container' => false, 
+									'menu_id' => 'nav', 
+									'theme_location' => 'primary', 
+									'fallback_cb' => 'bp_dtheme_main_nav' ,
+									'walker' => new Walker_Nav_Menu_Dropdown(),
+									'items_wrap' => '<div class="mobile-menu"><form><select onchange="if (this.value) window.location.href=this.value"><option>--Menu--</option>%3$s</select></form></div>' )); ?>
+            </div>
 			<?php do_action( 'bp_header' ); ?>
 
 		</div><!-- #header -->

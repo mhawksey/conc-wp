@@ -3,12 +3,24 @@ $root_cat = "Reader";
 require ( get_stylesheet_directory() . '/includes/XProfile_FWP.php' );
 // record if post has been read in the reader view
 require (get_stylesheet_directory() . '/includes/readerlite_mark_post_as_read.php');
+// dropdown nav
+require (get_stylesheet_directory() . '/includes/Walker_Nav_Menu_Dropdown.php');
 
 if (get_option('readerlite_mark_as_read') != 'true'){
 	include(get_stylesheet_directory() . '/includes/readerlite_installation.php');
 	readerlite_mar_install();
 	add_option('readerlite_mark_as_read','true');
 }
+
+register_sidebar(array(
+	'name' => __('Reader Sidebar', 'buddypress'),
+	'id' => 'reader',
+	'description'   => __( 'The sidebar widget area', 'buddypress' ),
+	'before_widget' => '<div id="%1$s" class="widget %2$s">',
+	'after_widget'  => '</div>',
+	'before_title'  => '<h3 class="widgettitle">',
+	'after_title'   => '</h3>'
+));
 
 function reader_ajax() { // loads post content into accordion
     $post_id = $_POST['post_id'];
@@ -81,8 +93,8 @@ function session_content_func( $atts=array() ) {
 	extract($atts );
 	$p = get_post($id);
 	$post_content = $p->post_content;
-	$content = '<div class="excerpt">'.substr(strip_tags($post_content), 0 , 250).'... <a href="" class="read">Read More</a>  </div>
-				<div class="content">'.$post_content.' <a href="" class="read-less">Read Less</a></div>';
+	$content = '<div class="excerpt">'.generate_excerpt($id).'... <a href="" class="read">Read More</a>  </div>
+				<div class="content">'.wpautop($post_content).' <a href="" class="read-less">Read Less</a></div>';
 	$prefix = do_shortcode('[session_meta post_id='.$id.']');
 	
 	if (!is_admin()){
@@ -202,7 +214,20 @@ function google_calendar_link($id){
 	return $replace;
 }
 
+function edit_profile_link($atts){
+		extract( shortcode_atts( array(
+	      'text' => 'edit your profile',
+		  'link' => '/login/',
+		  'link_post' => ''
+     ), $atts ) );
 
+	if ( is_user_logged_in() ) {
+		$link = bp_core_get_user_domain(bp_loggedin_user_id()) . $link_post ;
+	}
+	$output = '<a href="'.$link.'">'.$text.'</a>';
+	return $output;
+}
+add_shortcode('edit_profile_link', 'edit_profile_link');
 
 function newsletter_subscription_notification_settings() {
 	global $bp ;?>
@@ -229,7 +254,7 @@ if (class_exists('MailPress') && function_exists('get_mailpress_mlink')){
 // http://wordpress.org/support/topic/some-very-useful-tips-for-mailpress
 function get_mailpress_mlink($user_email) {
   global $wpdb;
-  $mailpress_user_key = $wpdb->get_var($wpdb->prepare("SELECT confkey FROM wp_mailpress_users WHERE email = '$user_email';"));
+  $mailpress_user_key = $wpdb->get_var($wpdb->prepare("SELECT confkey FROM wp_mailpress_users WHERE email = '%s';", $user_email));
   	echo 'To manage your conference newsletter subscription goto <a href="/newsletter-subscription/?action=mail_link&del=' . $mailpress_user_key . '">Manage Newsletter Subscriptions</a>';
 }
 
@@ -264,6 +289,7 @@ function con_group_create($post){
 		groups_update_groupmeta( $group_id, 'total_member_count', 0 );
 		groups_update_groupmeta( $group_id, 'last_activity', current_time('mysql') );
 		groups_update_groupmeta( $group_id, 'ass_default_subscription', 'sub');
+		groups_update_groupmeta( $group_id, 'invite_status', 'members' );
 		groups_accept_invite(1, $group_id );
 		groups_promote_member(1, $group_id, 'admin');
 		
@@ -301,45 +327,95 @@ function get_the_slug( $id=null ){
   return $slug;
 }
 
+/**
+ * bp_like_button()
+ *
+ * Outputs the 'Like/Unlike' and 'View likes/Hide likes' buttons.
+ * Modified from http://wordpress.org/plugins/buddypress-like/
+ */
+function conc_wp_bp_like_button( $id = '', $type = '' ) {
+	if (function_exists(bp_like_button)):
+	
+	$users_who_like = 0;
+	$liked_count = 0;
+	
+	/* Set the type if not already set, and check whether we are outputting the button on a blogpost or not. */
+	if ( !$type && !is_single() && !is_category() )
+		$type = 'activity';
+	elseif ( !$type && is_single() )
+		$type = 'blogpost';
+	elseif ( !$type && is_category() )
+		$type = 'reader';
+	
+	if ( $type == 'activity' ) :
+	
+		$activity = bp_activity_get_specific( array( 'activity_ids' => bp_get_activity_id() ) );
+		$activity_type = $activity['activities'][0]->type;
+	
+		if ( is_user_logged_in() && $activity_type !== 'activity_liked' ) :
+			
+			if ( bp_activity_get_meta( bp_get_activity_id(), 'liked_count', true )) {
+				$users_who_like = array_keys( bp_activity_get_meta( bp_get_activity_id(), 'liked_count', true ) );
+				$liked_count = count( $users_who_like );
+			}
+			
+			if ( !bp_like_is_liked( bp_get_activity_id(), 'activity' ) ) : ?>
+				<a href="#" class="like button bp-primary-action" id="like-activity-<?php bp_activity_id(); ?>" title="<?php echo bp_like_get_text( 'like_this_item' ); ?>"><?php echo bp_like_get_text( 'like' ); if ( $liked_count ) echo ' <span>' . $liked_count . '</span>'; ?></a>
+			<?php else : ?>
+				<a href="#" class="unlike button bp-primary-action" id="unlike-activity-<?php bp_activity_id(); ?>" title="<?php echo bp_like_get_text( 'unlike_this_item' ); ?>"><?php echo bp_like_get_text( 'unlike' ); if ( $liked_count ) echo ' <span>' . $liked_count . '</span>'; ?></a>
+			<?php endif;
+			
+			if ( $users_who_like ): ?>
+				<a href="#" class="view-likes" id="view-likes-<?php bp_activity_id(); ?>"><?php echo bp_like_get_text( 'view_likes' ); ?></a>
+				<p class="users-who-like" id="users-who-like-<?php bp_activity_id(); ?>"></p>
+			<?php
+			endif;
+		endif;
+	
+	elseif ( $type == 'blogpost' ) :
+		global $post;
+		
+		if ( !$id && is_single() )
+			$id = $post->ID;
+		
+		if ( is_user_logged_in() && get_post_meta( $id, 'liked_count', true ) ) {
+			$liked_count = count( get_post_meta( $id, 'liked_count', true ) );
+		}
+		
+		if ( !bp_like_is_liked( $id, 'blogpost' ) ) : ?>
+		
+		<div class="like-box"><a href="#" class="like_blogpost" id="like-blogpost-<?php echo $id; ?>" title="<?php echo bp_like_get_text( 'like_this_item' ); ?>"><?php echo bp_like_get_text( 'like' ); if ( $liked_count ) echo ' (' . $liked_count . ')'; ?></a></div>
+		
+		<?php else : ?>
+		
+		<div class="like-box"><a href="#" class="unlike_blogpost" id="unlike-blogpost-<?php echo $id; ?>" title="<?php echo bp_like_get_text( 'unlike_this_item' ); ?>"><?php echo bp_like_get_text( 'unlike' ); if ( $liked_count ) echo ' (' . $liked_count . ')'; ?></a></div>
+		<?php endif;
 
-// https://gist.github.com/sbrajesh/2142009
-function bpdev_exclude_users($qs=false,$object=false){
-    //list of users to exclude
-    
-    $excluded_user=join(',',bpdev_get_subscriber_user_ids());//comma separated ids of users whom you want to exclude
-   
-    if($object!='members')//hide for members only
-        return $qs;
-    
-    $args=wp_parse_args($qs);
-    
-    //check if we are searching for friends list etc?, do not exclude in this case
-    if(!empty($args['user_id']))
-        return $qs;
-    
-    if(!empty($args['exclude']))
-        $args['exclude']=$args['exclude'].','.$excluded_user;
-    else 
-        $args['exclude']=$excluded_user;
-      
-    $qs=build_query($args);
-   
-   
-   return $qs;
-    
+	elseif ( $type == 'reader' ) :
+			
+		if ( is_user_logged_in() && get_post_meta( $id, 'liked_count', true ) ) {
+			$liked_count = count( get_post_meta( $id, 'liked_count', true ) );
+		}
+		
+		if ( !bp_like_is_liked( $id, 'blogpost' ) ) : ?>
+		
+		<div class="like_widget"><a href="#" class="like_blogpost" id="like-blogpost-<?php echo $id; ?>" title="<?php echo bp_like_get_text( 'like_this_item' ); ?>"></a></div>
+		
+		<?php else : ?>
+		
+		<div class="like_widget"><a href="#" class="unlike_blogpost" id="unlike-blogpost-<?php echo $id; ?>" title="<?php echo bp_like_get_text( 'unlike_this_item' ); ?>"></a></div>
+		<?php endif;
+	endif;
+	endif;
 }
-add_action('bp_ajax_querystring','bpdev_exclude_users',20,2);
- 
-function bpdev_get_subscriber_user_ids(){
-    $users=array();
-    $subscribers= get_users( array( 'role' => 'contributor' ) );
-   if(!empty($subscribers)){
-       foreach((array)$subscribers as $subscriber)
-           $users[]=$subscriber->ID;
-       
-   }
-   return $users;
-}
+
+remove_filter( 'bp_activity_entry_meta', 'bp_like_button' );
+add_filter( 'bp_activity_entry_meta', 'conc_wp_bp_like_button' );
+remove_action( 'bp_before_blog_single_post', 'bp_like_button' );
+add_action( 'bp_before_blog_single_post', 'conc_wp_bp_like_button' );
+
+
+
 
 
 

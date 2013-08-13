@@ -70,56 +70,65 @@ function customAccordionHooks(){
 		event.stopImmediatePropagation();
 		event.stopPropagation();
 	});	
-	jQuery('.wpfp-link').on("click", function(event){	
+	jQuery('.like, .unlike, .like_blogpost, .unlike_blogpost').on('click', function() {
 		event.stopImmediatePropagation();
 		event.stopPropagation();
-		//Your Code here(For example a call to your function)
-		dhis = jQuery(this);
-		wpfp_do_js( dhis, 1 );
-				
-		// for favorite post listing page
-		if (dhis.hasClass('remove-parent')) {
-			dhis.parent("li").fadeOut();
-		}
+		
+		// Add the BuddyPress Like plugin code back in 
+		// From http://wordpress.org/plugins/buddypress-like/
+		// http://plugins.svn.wordpress.org/buddypress-like/tags/0.0.8/_inc/js/bp-like.dev.js
+		var type = jQuery(this).attr('class');
+		var id = jQuery(this).attr('id');
+		
+		jQuery(this).addClass('loading');
+		
+		jQuery.post( ajaxurl, {
+			action: 'activity_like',
+			'cookie': encodeURIComponent(document.cookie),
+			'type': type,
+			'id': id
+		},
+		function(data) {
+			
+			jQuery('#' + id).fadeOut( 100, function() {
+				jQuery(this).html(data).removeClass('loading').fadeIn(100);
+			});
+			// Swap from like to unlike
+			if (type == 'like') {
+				var newID = id.replace("like", "unlike");
+				jQuery('#' + id).removeClass('like').addClass('unlike').attr('title', bp_like_terms_unlike_message).attr('id', newID);
+			} else if (type == 'like_blogpost') {
+				var newID = id.replace("like", "unlike");
+				jQuery('#' + id).removeClass('like_blogpost').addClass('unlike_blogpost').attr('title', bp_like_terms_unlike_message).attr('id', newID);
+				var post_url = jQuery('#'+id.match(/\d+/)+'.ajaxed').attr('url')
+				_gaq.push(['_trackEvent', 'Course Reader', 'fav', post_url]);
+			} else if (type == 'unlike_blogpost') {
+				var newID = id.replace("unlike", "like");
+				jQuery('#' + id).removeClass('unlike_blogpost').addClass('like_blogpost').attr('title', bp_like_terms_unlike_message).attr('id', newID);
+			} else {
+				var newID = id.replace("unlike", "like");
+				jQuery('#' + id).removeClass('unlike').addClass('like').attr('title', bp_like_terms_like_message).attr('id', newID);
+			}
+			
+			// Nobody else liked this, so remove the 'View Likes'
+			if (data == bp_like_terms_like) {
+				var pureID = id.replace("unlike-activity-", "");
+				jQuery('.view-likes#view-likes-'+ pureID).remove();
+				jQuery('.users-who-like#users-who-like-'+ pureID).remove();
+			}
+			
+			// Show the 'View Likes' if user is first to like
+			if ( data == bp_like_terms_unlike_1 ) {
+				var pureID = id.replace("like-activity-", "");
+				jQuery('li#activity-'+ pureID + ' .activity-meta').append('<a href="" class="view-likes" id="view-likes-' + pureID + '">' + bp_like_terms_view_likes + '</a><p class="users-who-like" id="users-who-like-' + pureID + '"></p>');
+			}
+			
+		});
+		
 		return false;
-	});	
-	jQuery('.wpfp-link').addClass(function() { return qs(this.href).wpfpaction});
-}
-function wpfp_do_js( dhis, doAjax ) {
-	dhis.hide();
-    loadingImg = dhis.prev();
-    loadingImg.show();
-    beforeImg = dhis.prev().prev();
-    beforeImg.hide();
-    url = document.location.href.split('#')[0];
-    params = dhis.attr('href').replace('?', '') + '&ajax=1';
-    if ( doAjax ) {
-        jQuery.get(url, params, function(data) {
-                dhis.parent().html(data);
-                if(typeof wpfp_after_ajax == 'function') {
-                    wpfp_after_ajax( dhis ); // use this like a wp action.
-                }
-                loadingImg.hide();
-				//customAccordionHooks();
-            }
-        );
-    }
+	});
 }
 
-function wpfp_after_ajax( dhis ){
-	customAccordionHooks();
-	var action = qs(dhis[0].href).wpfpaction;
-	if (action == "add"){
-		dhis.parent().removeClass("remove");
-		dhis.parent().addClass("add");
-		var params = qs(dhis.attr('href'));
-		var post_url = jQuery('div[id^="'+params.postid+'"]').attr('url');
-		_gaq.push(['_trackEvent', 'Course Reader', 'fav', post_url]);
-	} else {
-		dhis.parent().removeClass("add");
-		dhis.parent().addClass("remove");
-	}
-}
 
 function qs(url) {
     var params = {}, queries, temp, i, l;

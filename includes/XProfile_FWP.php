@@ -5,7 +5,7 @@
 
 // Handle what's linked in user profile https://gist.github.com/modemlooper/4574785
 function bp_select_links_in_profile() {
-  add_filter( 'bp_get_the_profile_field_value', 'bp_links_in_profile', 9, 3 );
+  add_filter( 'bp_get_the_profile_field_value', 'bp_links_in_profile', 10, 3 );
 }
 add_action( 'bp_init', 'bp_select_links_in_profile', 0 );
 
@@ -13,7 +13,6 @@ add_action( 'bp_init', 'bp_select_links_in_profile', 0 );
 function bp_links_in_profile( $val, $type, $key ) {
 	$field = new BP_XProfile_Field( $key );
 	$field_name = $field->name;
-	
 	if(  strtolower( $field_name ) == 'bio' ) {
 		$val = strip_tags( $val );
 	}
@@ -76,6 +75,18 @@ function ajaxFeedSearch() {
 }
 add_action('wp_ajax_ajaxFeedSearch', 'ajaxFeedSearch');
 
+function subscriber_type($userid){
+	$user = new WP_User( $userid );
+	$is_sub = false;
+    if ( !empty( $user->roles ) && is_array( $user->roles ) ) {
+        foreach ( $user->roles as $role ){
+            if ($role=="subscriber" || $role=="subscriber-unlisted") 
+				return $role;
+		}
+    }
+	return $is_sub;
+}
+
 // handling registration of a blog feed with feedwordpress
 function update_extra_profile_fields($user_id, $posted_field_ids, $errors) {
     // There are errors
@@ -92,9 +103,25 @@ function update_extra_profile_fields($user_id, $posted_field_ids, $errors) {
 			if ($field->name == 'Blog RSS'){
 				$blogrss = $_POST['field_'.$field_id];
 			}
+			if ($field->name == 'Searchable in members list'){
+				$onlist = $_POST['field_'.$field_id];
+			}
 	
 		}
 	}
+	if ($onlist && subscriber_type($user_id) == "subscriber-unlisted"){
+		// http://wordpress.stackexchange.com/a/4727
+		$u = new WP_User( $user_id );
+		// Remove role
+		$u->remove_role( "subscriber-unlisted" );
+		// Add role
+		$u->add_role( 'subscriber' );
+	} elseif (!$onlist && subscriber_type($user_id) == "subscriber"){
+		$u = new WP_User( $user_id );
+		$u->remove_role( "subscriber" );
+		$u->add_role( 'subscriber-unlisted' );
+	}
+	
 	$linkid = get_user_meta($user_id, 'link_id', true);
 	if ($blogrss != "" && $blogurl == "") $blogurl = $blogrss;
 	if ($blogrss != "" && $blogurl != ""){ 
@@ -150,4 +177,46 @@ function add_hide_profile_fields( $contactmethods ) {
 return $contactmethods;
 }
 add_filter('user_contactmethods','add_hide_profile_fields',10,1);
+
+// https://gist.github.com/sbrajesh/2142009
+function bpdev_exclude_users($qs=false,$object=false){
+    //list of users to exclude
+    $excluded_user_array = array_merge(bpdev_get_subscriber_user_ids('contributor'),bpdev_get_subscriber_user_ids('subscriber-unlisted'));
+	
+    $excluded_user=join(',',$excluded_user_array);//comma separated ids of users whom you want to exclude
+
+   
+    if($object!='members')//hide for members only
+        return $qs;
+    
+    $args=wp_parse_args($qs);
+    
+    //check if we are searching for friends list etc?, do not exclude in this case
+    if(!empty($args['user_id']))
+        return $qs;
+    
+    if(!empty($args['exclude']))
+        $args['exclude']=$args['exclude'].','.$excluded_user;
+    else 
+        $args['exclude']=$excluded_user;
+      
+    $qs=build_query($args);
+   
+   
+   return $qs;
+    
+}
+add_action('bp_ajax_querystring','bpdev_exclude_users',20,2);
+ 
+function bpdev_get_subscriber_user_ids($role){
+    $users=array();
+    $subscribers= get_users( array( 'role' => $role ) );
+   if(!empty($subscribers)){
+       foreach((array)$subscribers as $subscriber)
+           $users[]=$subscriber->ID;
+       
+   }
+   return $users;
+}
+
 ?>

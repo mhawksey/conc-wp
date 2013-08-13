@@ -74,7 +74,7 @@ class Conferencer_Shortcode_Agenda_Custom extends Conferencer_Shortcode {
 	
 		// Get all session information
 	
-		$sessions = Conferencer::get_posts('session', false, 'title_sort');
+		$sessions = Conferencer::get_posts('session', false, 'order_sort');
 		foreach (array_keys($sessions) as $id) {
 			Conferencer::add_meta($sessions[$id]);
 		}
@@ -188,21 +188,21 @@ class Conferencer_Shortcode_Agenda_Custom extends Conferencer_Shortcode {
 <?php 
 $column_posts = Conferencer::get_posts('track');
 $track_array = array();
-$out = "<!-- ";
+//$out = "<!-- ";
 ?>
 <div class="agenda-filter">
 <h2>Track Filter</h2>
 <?php
 foreach ($column_posts as $column_post) {
 	$track_array[$column_post->ID] = $column_post->post_title;
-	$out .= ".track-".$column_post->post_name."{\n\n}\n\n"; ?>
+	//$out .= ".track-".$column_post->post_name."{\n\n}\n\n"; ?>
 	<div class="track track-<?php echo $column_post->post_name;?>" id="track-<?php echo $column_post->post_name;?>">
     	<label><input id="track-<?php echo $column_post->post_name;?>" name="track-<?php echo $column_post->ID;?>" type="checkbox" checked/>
     	<?php echo $column_post->post_title;?></label>
     </div> 
     <?php 
 }
-echo $out." -->";
+//echo $out." -->";
 ?>
 </div>
 <script type="text/javascript">
@@ -410,7 +410,7 @@ jQuery( document ).ready(function($) {
 					<?php echo do_shortcode("
 						[session_meta
 							post_id='$session->ID'
-							show='title,speakers,room'
+							show='title,speakers,room,track'
 							link_all=false
 						]
 					"); ?>

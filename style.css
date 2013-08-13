@@ -22,19 +22,165 @@ License URI: license.txt
 		display:none;
 	}
 }
-@media only screen and (max-width: 320px){
+@media only screen and (max-width: 480px){
 	.activity-list .activity-content {
 		margin-left:0px !important;	
 	}
 }
 
-/*The last 29 days of the month are the hardest."- Nikola Tesla*/
+@media only screen and (max-width: 768px){
+	#navigation-drop {
+		display:block;
+	}
+	#navigation, #primary_links {
+		display:none;	
+	}
+	#bp-default div.post div.author-box {
+		float:left;	
+		margin-bottom: 5px;
+	}
+	h2.posttitle{
+		min-height:112px;
+	}
+	div.post-content {
+		margin-left:0px;	
+	}
+}
+@media only screen and (min-width: 768px){
+	#navigation-drop {
+		display:none;
+	}
+}
+@media only screen and (max-width: 428px){
+	#header #search-terms {
+		width: 90%;
+		margin-left: 10px;
+	}
+}
+/* Stlyes used in header of ALT site */
 
+#header {
+border-top: 1px solid #FFF;
+border-bottom: 1px solid #FFF;
+color: #006655;
+}
+#search-bar {
+margin-bottom: 48px;
+}
+#primary_links, #nav {
+  background: #96b939;
+  font: 1.3em Arial,'Liberation Sans',FreeSans,sans-serif;
+
+}
+#nav {
+background:#962E74;
+width:100%;
+}
+#navigation{
+position:static;
+}
+#primary_links ul {
+  float: left;
+  width: 100%;
+  background: #96b939;
+  color: #FFF;
+  border-bottom: 1px solid #fff;
+  border-top: 1px solid #fff;
+}
+#primary_links ul li {
+  margin: 0;
+  padding: 0;
+}
+#primary_links ul li a {
+  float: left;
+  display: block;
+  padding: 5px 10px;
+  color: #FFF;
+  text-decoration: none;
+}
+#primary_links ul li a :hover,
+#primary_links ul li a :focus {
+  color: #C6D88E;
+  background: #1e6157;
+}
+#primary_links ul li.active-trail a,
+#primary_links ul li.active a {
+  background: #C6D88E;
+  color: #1e6157;
+}
+#primary_links ul li.active-trail a :hover,
+#primary_links ul li.active-trail a :focus,
+#primary_links ul li.active a :hover,
+#primary_links ul li.active a :focus {
+  color: #C6D88E;
+  background: #1e6157;
+}
+
+/*The last 29 days of the month are the hardest."- Nikola Tesla*/
+#header input[type=submit]{
+background:	#96b939;
+color:#fff;
+}
+#header form#search-form {
+	padding-left: 210px;
+	height: 25px;
+}
+#logo a{
+background-image:url(images/logo.png);	
+width: 230px;
+height: 113px;
+position: absolute;
+top: 0px;
+left: 0px;
+}
+#logo a {
+   /* Hide the text. */
+    text-indent: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+#nav {
+margin: 0px !important;
+float: left !important;
+}
+#nav ul {
+	border: #962E74 1px solid !important;
+}
+#nav li {
+margin-left: 0px !important;
+}
+#nav li li {
+border-top:#fff 1px solid;
+}
+#nav > li > a {
+	-moz-border-radius-topleft: 0px!important;
+	-webkit-border-top-left-radius: 0px!important;
+	-moz-border-radius-topright: 0px!important;
+	-webkit-border-top-right-radius: 0px!important;
+	border-top-left-radius: 0px!important;
+	border-top-right-radius: 0px!important;
+}
+#nav li{
+background:#962E74;
+}
+#nav li a {
+	background:none !important;
+	
+}
+#nav > li.current-menu-item a, #nav > li.current_page_item a, #nav li a:hover, #nav li.sfhover, #nav >li.current_page_ancestor a{
+	background:#610F46 !important;
+	color:#fff!important;	
+}
+
+#navigation-drop select{
+	width:100%;	
+}
 form div {
 	margin-bottom:0px;	
 }
-
-
+#header{
+margin-bottom: 0px;
+}
 .conferencer_agenda .grid {
 table-layout: auto;
 margin-top: 0px !important;
@@ -57,6 +203,13 @@ tr.non-session td {
 	font-size: 100% !important;
 	margin-bottom: 0px !important;
 	
+}
+.agenda-filter input {
+vertical-align:middle;	
+}
+
+.conferencer_tabs a {
+color: #225599;	
 }
 
 td.time_slot{
@@ -264,47 +417,35 @@ width:15px;
 height:15px;
 display:inline-block;
 }
-
-a.wpfp-link.add {
-background:url(icons/acc-sprite.png) 0 0 no-repeat;
-width:15px;
-height:15px;
-display:inline-block;
-}
-
-.wpf_custom_widget {
-list-style-type:none;
-padding-left:0px !important;
-
-}
-.wpf_custom_star{
+.like_widget {
 float:left;	
+}
+.like_widget a{
+	overflow: hidden;
+	text-indent: 100%;
+	white-space: nowrap;
+	width:15px;
+	height:15px;
+	display:inline-block;
+}
+.like_widget a.like_blogpost {
+	background:url(icons/acc-sprite.png) 0 0 no-repeat;
+}
+.like_widget a.unlike_blogpost {
+background:url(icons/acc-sprite.png) -49px 0 no-repeat;
+}
+.like_widget a.loading {
+background:url(icons/loading.gif) no-repeat;
+padding-right:0px;
+}
 
-}
-.wpf_custom_star a {
-	display:inline-block !important;
-}
-.wpf_custom_div{
-padding-left: 20px;
-padding-bottom:7px;
-}
-
-a:hover.wpfp-link {
+.like_widget a:hover {
 background-position:-25px;
 }
 
-.wpfp-span {
-float:left;
+.ui-accordion .ui-accordion-header .ui-accordion-header-icon {
+top:14px !important;	
 }
-
-.wpfp-img {
-border:0;
-vertical-align:middle;
-margin-right:2px;
-}
-
-.wp-favourite-user-section li {
-list-style:disc!important;
-list-style-position:outside!important;
-margin-left:20px!important;
+.ui-accordion .ui-accordion-icons {
+padding-left: 1.7em !important;
 }
