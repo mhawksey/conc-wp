@@ -1,23 +1,24 @@
 <?php while (have_posts()) : the_post(); ?>
 <?php $source = html_entity_decode(get_syndication_source(),ENT_QUOTES,'UTF-8'); ?>
-	<h3 class="post-title <?php if(function_exists('readerlite_get_if_read_post')){ readerlite_get_if_read_post(get_the_ID()); }?>"><?php if(function_exists('wpfp_link')) wpfp_link(); ?>
+	<h3 class="post-title <?php if(function_exists('readerlite_get_if_read_post')){ readerlite_get_if_read_post(get_the_ID()); }?>"><?php conc_wp_bp_like_button( get_the_ID() )?>
       <div class="ajaxed" id="<?php the_ID();?>" url="<?php the_permalink();?>">
       	<div><a class="jump_to_url disable_accordion" href="<?php the_permalink(); ?>" title="Open in new window: <?php the_title(); ?>" target="_blank"></a></div>
         <div id="post_title_block">
         	<span class="collapse_title"><?php echo html_entity_decode(get_the_title(),ENT_QUOTES,'UTF-8'); ?></span>
             <span class="collapse_source"> - <?php print $source; ?></span>
-            <div class="snippet"><?php the_excerpt(); ?></div>
+            <div class="snippet"><?php echo reader_excerpt(get_the_ID()); ?></div>
         </div>
       </div></h3>
 	<div id="post-<?php the_ID();?>">
        <div class="loaded-post">
-			<div class="post-meta">
+          <h2 class="posttitle"><a href="<?php the_permalink(); ?>" target="_blank"><?php the_title(); ?></a></h2>
+			<p class="postmetadata">
 			<?php printf( __( 'Posted on %1$s' , 'buddypress' ), get_the_date() ); ?> <?php if (get_user_role( $post->post_author )!="contributor"){ printf( _x( 'by %s', 'Post written by...', 'buddypress' ), bp_core_get_userlink( $post->post_author ) );} ?> from <a href="<?php the_syndication_source_link(); ?>" target="_blank"><?php print $source; ?></a><br/>
 			<?php the_tags( '<span class="tags">' . __( 'Tags: ', 'buddypress' ), ', ', '</span>' ); ?> 
-			<?php printf(__('Posted in %s', 'responsive'), get_the_category_list(', ')); ?>
+			<?php //printf(__('Posted in %s', 'responsive'), get_the_category_list(', ')); ?>
 			<!-- end of .post-data -->  
-		   </div>
-		   <div class="post-entry">
+		   </p>
+		   <div class="entry">
 			 <?php the_content( __( 'Read the rest of this entry &rarr;', 'buddypress' ) ); ?>
 		   </div>
 		  </div>

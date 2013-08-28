@@ -6,6 +6,99 @@ require (get_stylesheet_directory() . '/includes/readerlite_mark_post_as_read.ph
 // dropdown nav
 require (get_stylesheet_directory() . '/includes/Walker_Nav_Menu_Dropdown.php');
 
+add_filter('bp_search_form_type_select_options', 'include_session_in_seach_option');
+add_filter('bp_core_search_site', 'search_session_url', 10, 2);
+
+add_filter('pre_get_posts','mySearchFilter');
+
+if (!function_exists('reader_excerpt')) {
+	function reader_excerpt($post_id = false) {
+		if ($post_id) $post = is_numeric($post_id) ? get_post($post_id) : $post_id;
+		else $post = $GLOBALS['post'];
+
+		if (!$post) return '';
+		//if (isset($post->post_excerpt) && !empty($post->post_excerpt)) return $post->post_excerpt;
+		if (!isset($post->post_content)) return '';
+	
+		$content = $raw_content = $post->post_content;
+	
+		if (!empty($content)) {
+			
+			$content = strip_tags($content);
+			$content = preg_replace( '/\s+/', ' ', $content );
+			$excerpt = explode(' ', $content, 155);
+			array_pop($excerpt);
+			$excerpt = implode(" ",$excerpt).'...';
+			return $excerpt;
+		}
+	
+	}
+}
+
+add_action( 'init', 'infinite_scroll_init' );
+function infinite_scroll_init() {
+	add_theme_support( 'infinite-scroll', array(
+		'container' => 'accordion',
+		'render'    => 'infinite_scroll_render',	
+		'wrapper'   => false,
+		'footer'    => false
+	) );
+}
+
+/**
+ * Set the code to be rendered on for calling posts,
+ * hooked to template parts when possible.
+ *
+ * Note: must define a loop.
+ */
+function infinite_scroll_render() {
+	//if(!$ajaxedload){
+		get_template_part( 'content' );
+	//} else {
+	//	get_template_part( 'content-ajaxed' );
+	//}
+}
+
+function mySearchFilter($query) {
+	$search_which = $_REQUEST['search-which'];
+	if (!$search_which == 'session') {
+		$post_type = 'any';
+	} else {
+		$post_type = $search_which;	
+	}
+    if ($query->is_search) {
+		$query->set( 'post_type', array( 'session' ) );
+    };
+
+    return $query;
+};
+
+/* Inject Activity in the Search drop down */
+
+function include_session_in_seach_option($options) {
+	$newoption['session'] = $options['groups'];
+	unset($options['groups']);
+	$options = $newoption + $options;
+	return $options;
+}
+//where to redirect on activity search, obviously activity directory
+function search_session_url($url, $search_terms) {
+	$search_which = $_POST['search-which']; //what is being searched?
+
+	if ($search_which != 'session')//is it activity? if not, let us return
+		return $url;
+
+	$url = '/?s=' . urlencode($search_terms);
+
+	return $url;
+}
+/*
+apply_filters( 'the_category', 'add_conferencer_slug');
+function add_conferencer_slug($thelist){
+	global $post;
+	return $thelist."a";	
+}
+*/
 if (get_option('readerlite_mark_as_read') != 'true'){
 	include(get_stylesheet_directory() . '/includes/readerlite_installation.php');
 	readerlite_mar_install();
@@ -288,7 +381,7 @@ function con_group_create($post){
 		
 		groups_update_groupmeta( $group_id, 'total_member_count', 0 );
 		groups_update_groupmeta( $group_id, 'last_activity', current_time('mysql') );
-		groups_update_groupmeta( $group_id, 'ass_default_subscription', 'sub');
+		groups_update_groupmeta( $group_id, 'ass_default_subscription', 'dig');
 		groups_update_groupmeta( $group_id, 'invite_status', 'members' );
 		groups_accept_invite(1, $group_id );
 		groups_promote_member(1, $group_id, 'admin');
@@ -308,9 +401,14 @@ function my_admin_enqueue($hook_suffix) {
     if($hook_suffix == 'conferencer_page_conferencer_reordering') {
 		// http://wordpress.org/support/topic/error-has-no-method-curcss#post-3964638
     	wp_deregister_script('jquery');
+		wp_deregister_script( 'jquery-ui-core' );
+		wp_deregister_script( 'jquery-ui-draggable' );
     	wp_register_script('jquery', ("http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"), false, '1.7.2', false);
     	wp_enqueue_script('jquery');
     }
+	if($hook_suffix == 'toplevel_page_bp-groups'){
+		echo "<style>#bp-groups-form span.edit {display:none}</style>";	
+	}
 }
 add_action('admin_enqueue_scripts', 'my_admin_enqueue');
 
@@ -360,9 +458,9 @@ function conc_wp_bp_like_button( $id = '', $type = '' ) {
 			}
 			
 			if ( !bp_like_is_liked( bp_get_activity_id(), 'activity' ) ) : ?>
-				<a href="#" class="like button bp-primary-action" id="like-activity-<?php bp_activity_id(); ?>" title="<?php echo bp_like_get_text( 'like_this_item' ); ?>"><?php echo bp_like_get_text( 'like' ); if ( $liked_count ) echo ' <span>' . $liked_count . '</span>'; ?></a>
+				<a href="#" class="like" id="like-activity-<?php bp_activity_id(); ?>" title="<?php echo bp_like_get_text( 'like_this_item' ); ?>"><?php echo bp_like_get_text( 'like' ); if ( $liked_count ) echo ' <span>' . $liked_count . '</span>'; ?></a>
 			<?php else : ?>
-				<a href="#" class="unlike button bp-primary-action" id="unlike-activity-<?php bp_activity_id(); ?>" title="<?php echo bp_like_get_text( 'unlike_this_item' ); ?>"><?php echo bp_like_get_text( 'unlike' ); if ( $liked_count ) echo ' <span>' . $liked_count . '</span>'; ?></a>
+				<a href="#" class="unlike" id="unlike-activity-<?php bp_activity_id(); ?>" title="<?php echo bp_like_get_text( 'unlike_this_item' ); ?>"><?php echo bp_like_get_text( 'unlike' ); if ( $liked_count ) echo ' <span>' . $liked_count . '</span>'; ?></a>
 			<?php endif;
 			
 			if ( $users_who_like ): ?>
